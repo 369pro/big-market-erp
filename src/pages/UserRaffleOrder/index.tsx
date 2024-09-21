@@ -1,10 +1,9 @@
-import {PageContainer, ProColumns, ProTable} from "@ant-design/pro-components";
-import { userRaffleOrder } from '@/services/ant-design-pro/api';
-import React from "react";
+import { PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
+// import { userRaffleOrder } from '@/services/ant-design-pro/api';
+import React from 'react';
+import { query_user_raffle_order } from '@/services/api';
 
 const UserRaffleOrder: React.FC = () => {
-
-
   const columns: ProColumns<API.UserRaffleOrderItem>[] = [
     {
       title: '用户ID',
@@ -50,12 +49,12 @@ const UserRaffleOrder: React.FC = () => {
 
   return (
     <PageContainer>
-      <ProTable<API.UserRaffleOrderItem, API.PageParams> request={userRaffleOrder} columns={columns}>
-
-      </ProTable>
-
+      <ProTable<API.UserRaffleOrderItem, API.PageParams>
+        request={query_user_raffle_order}
+        columns={columns}
+      ></ProTable>
     </PageContainer>
   );
-}
+};
 
 export default UserRaffleOrder;
