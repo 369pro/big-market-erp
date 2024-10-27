@@ -46,6 +46,12 @@ export default [
     ],
   },
   {
+    name: '活动上架',
+    icon: 'table',
+    path: '/raffle_stage_list',
+    component: './RaffleStageOrder',
+  },
+  {
     name: '抽奖订单',
     icon: 'table',
     path: '/user_raffle_order_list',

@@ -112,4 +112,11 @@ declare namespace API {
     updateTime?: string;
   };
 
+  type RaffleActivityStageItem = {
+    id?: string;
+    channel?: string;
+    source?: string;
+    activityId?: number;
+    state?: string;
+  };
 }

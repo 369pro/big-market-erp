@@ -15,3 +15,31 @@ export async function query_user_raffle_order() {
     },
   );
 }
+
+export async function query_raffle_activity_stage_list() {
+  return request<API.RaffleActivityStageItem>(
+    `${apiHostUrl}/api/v1/raffle/erp/query_raffle_activity_stage_list`,
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    },
+  );
+}
+
+export async function update_stage_activity_2_active(id?: number) {
+  return request<API.RaffleActivityStageItem>(
+    `${apiHostUrl}/api/v1/raffle/erp/update_stage_activity_2_active`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      data: {
+        method: 'post',
+        id,
+      },
+    },
+  );
+}
