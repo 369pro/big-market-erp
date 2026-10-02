@@ -178,6 +178,21 @@ const RaffleStageOrder: React.FC = () => {
       hideInTable: true,
       valueType: 'text',
     },
+    {
+      title: '操作',
+      valueType: 'option',
+      render: (_, record) => {
+        if (record.activityId === undefined || record.activityId === null) return [];
+        return [
+          <Link
+            key="view-activity"
+            to={`/raffle_activities?activityId=${encodeURIComponent(String(record.activityId))}`}
+          >
+            查看活动
+          </Link>,
+        ];
+      },
+    },
   ];
 
   return (
