@@ -24,26 +24,21 @@ export default [
   },
   {
     path: '/welcome',
-    name: 'welcome',
-    icon: 'smile',
-    component: './Welcome',
+    redirect: '/raffle_activities',
+  },
+  {
+    path: '/admin/sub-page',
+    redirect: '/raffle_activities',
   },
   {
     path: '/admin',
-    name: 'admin',
-    icon: 'crown',
-    access: 'canAdmin',
-    routes: [
-      {
-        path: '/admin',
-        redirect: '/admin/sub-page',
-      },
-      {
-        path: '/admin/sub-page',
-        name: 'sub-page',
-        component: './Admin',
-      },
-    ],
+    redirect: '/raffle_activities',
+  },
+  {
+    name: '活动展示',
+    icon: 'table',
+    path: '/raffle_activities',
+    component: './RaffleActivities',
   },
   {
     name: '活动上架',
@@ -58,14 +53,12 @@ export default [
     component: './UserRaffleOrder',
   },
   {
-    name: 'list.table-list',
-    icon: 'table',
     path: '/list',
-    component: './TableList',
+    redirect: '/raffle_activities',
   },
   {
     path: '/',
-    redirect: '/welcome',
+    redirect: '/raffle_activities',
   },
   {
     path: '*',
