@@ -117,7 +117,7 @@ const formatBalance = (prize: ActivityPrize) => {
       : String(prize.balanceAmount ?? '').trim();
   if (!/^-?\d+(\.\d{1,8})?$/.test(rawAmount)) return '余额金额未提供';
   const [integer, fraction = ''] = rawAmount.split('.');
-  return `¥${integer}.${fraction.padEnd(2, '0')} CNY`;
+  return `¥${integer}.${fraction.replace(/0+$/, '').padEnd(2, '0')} CNY`;
 };
 
 const formatStock = (prize: ActivityPrize) => {
@@ -532,7 +532,7 @@ const RaffleActivities: React.FC = () => {
 
       {selectedActivity && (
         <Card
-          title="真实奖品配置"
+          title="奖品配置"
           style={{ marginTop: 16 }}
           extra={
             <Typography.Text type="secondary">
@@ -584,9 +584,7 @@ const RaffleActivities: React.FC = () => {
         <Card
           title="积分兑换配置"
           style={{ marginTop: 16 }}
-          extra={
-            <Typography.Text type="secondary">兑换积分与抽奖次数，不是人民币余额</Typography.Text>
-          }
+          extra={<Typography.Text type="secondary">使用积分兑换抽奖机会</Typography.Text>}
         >
           {detail.skus.length > 0 ? (
             <SkuTable skus={detail.skus} />
