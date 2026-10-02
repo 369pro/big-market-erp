@@ -1,17 +1,27 @@
 import { PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 // import { userRaffleOrder } from '@/services/ant-design-pro/api';
+import { query_user_raffle_order_page } from '@/services/api';
 import { Alert, Button } from 'antd';
 import React, { useState } from 'react';
-import { query_user_raffle_order } from '@/services/api';
+
+const DEFAULT_PAGE_SIZE = 25;
 
 const UserRaffleOrder: React.FC = () => {
   const [requestError, setRequestError] = useState<string>();
   const [tableKey, setTableKey] = useState(0);
+  const activityId =
+    typeof window === 'undefined'
+      ? undefined
+      : new URLSearchParams(window.location.search).get('activityId') || undefined;
 
   const request = async (params: API.PageParams) => {
     setRequestError(undefined);
     try {
-      return await query_user_raffle_order(params);
+      const searchParams = params as API.PageParams & { activityId?: number | string };
+      return await query_user_raffle_order_page({
+        ...params,
+        activityId: searchParams.activityId ?? activityId,
+      });
     } catch (error) {
       const message = error instanceof Error ? error.message : '查询抽奖订单失败';
       setRequestError(message);
@@ -49,16 +59,19 @@ const UserRaffleOrder: React.FC = () => {
       title: '下单时间',
       dataIndex: 'orderTime',
       valueType: 'dateTime',
+      hideInSearch: true,
     },
     {
       title: '创建时间',
       dataIndex: 'createTime',
       valueType: 'dateTime',
+      hideInSearch: true,
     },
     {
       title: '更新时间',
       dataIndex: 'updateTime',
       valueType: 'dateTime',
+      hideInSearch: true,
     },
     {
       title: '订单状态',
@@ -98,8 +111,8 @@ const UserRaffleOrder: React.FC = () => {
           request={request}
           columns={columns}
           rowKey="orderId"
-          search={false}
-          pagination={false}
+          form={{ initialValues: activityId ? { activityId } : undefined }}
+          pagination={{ defaultPageSize: DEFAULT_PAGE_SIZE, showSizeChanger: true }}
         ></ProTable>
       )}
     </PageContainer>

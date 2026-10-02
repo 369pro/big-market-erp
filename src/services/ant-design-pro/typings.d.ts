@@ -113,10 +113,16 @@ declare namespace API {
   };
 
   type RaffleActivityStageItem = {
-    id?: string;
+    id?: number | string;
     channel?: string;
     source?: string;
-    activityId?: number;
+    activityId?: number | string;
+    activityName?: string;
+    activityDesc?: string;
+    strategyId?: number | string;
+    activityState?: string;
+    beginDateTime?: string | number;
+    endDateTime?: string | number;
     state?: string;
   };
 }
