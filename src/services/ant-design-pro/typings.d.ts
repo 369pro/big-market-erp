@@ -102,14 +102,14 @@ declare namespace API {
   type UserRaffleOrderItem = {
     id?: string;
     userId?: string;
-    activityId?: string;
+    activityId?: number | string;
     activityName?: string;
-    strategyId?: string;
+    strategyId?: number | string;
     orderId?: string;
-    orderTime?: string;
+    orderTime?: string | number;
     orderState?: string;
-    createTime?: string;
-    updateTime?: string;
+    createTime?: string | number;
+    updateTime?: string | number;
   };
 
   type RaffleActivityStageItem = {

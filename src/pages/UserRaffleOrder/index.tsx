@@ -1,9 +1,24 @@
 import { PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 // import { userRaffleOrder } from '@/services/ant-design-pro/api';
-import React from 'react';
+import { Alert, Button } from 'antd';
+import React, { useState } from 'react';
 import { query_user_raffle_order } from '@/services/api';
 
 const UserRaffleOrder: React.FC = () => {
+  const [requestError, setRequestError] = useState<string>();
+  const [tableKey, setTableKey] = useState(0);
+
+  const request = async (params: API.PageParams) => {
+    setRequestError(undefined);
+    try {
+      return await query_user_raffle_order(params);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '查询抽奖订单失败';
+      setRequestError(message);
+      throw error;
+    }
+  };
+
   const columns: ProColumns<API.UserRaffleOrderItem>[] = [
     {
       title: '用户ID',
@@ -33,26 +48,60 @@ const UserRaffleOrder: React.FC = () => {
     {
       title: '下单时间',
       dataIndex: 'orderTime',
-      valueType: 'textarea',
+      valueType: 'dateTime',
     },
     {
-      title: '下单时间',
-      dataIndex: 'orderTime',
-      valueType: 'textarea',
+      title: '创建时间',
+      dataIndex: 'createTime',
+      valueType: 'dateTime',
+    },
+    {
+      title: '更新时间',
+      dataIndex: 'updateTime',
+      valueType: 'dateTime',
     },
     {
       title: '订单状态',
       dataIndex: 'orderState',
-      valueType: 'textarea',
+      valueEnum: {
+        create: { text: '创建', status: 'Processing' },
+        used: { text: '已使用', status: 'Success' },
+        cancel: { text: '已作废', status: 'Error' },
+      },
     },
   ];
 
   return (
     <PageContainer>
-      <ProTable<API.UserRaffleOrderItem, API.PageParams>
-        request={query_user_raffle_order}
-        columns={columns}
-      ></ProTable>
+      {requestError ? (
+        <Alert
+          type="error"
+          showIcon
+          message="抽奖订单加载失败"
+          description={requestError}
+          action={
+            <Button
+              size="small"
+              onClick={() => {
+                setRequestError(undefined);
+                setTableKey((key) => key + 1);
+              }}
+            >
+              重试
+            </Button>
+          }
+          style={{ marginBottom: 16 }}
+        />
+      ) : (
+        <ProTable<API.UserRaffleOrderItem, API.PageParams>
+          key={tableKey}
+          request={request}
+          columns={columns}
+          rowKey="orderId"
+          search={false}
+          pagination={false}
+        ></ProTable>
+      )}
     </PageContainer>
   );
 };
