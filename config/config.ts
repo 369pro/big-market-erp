@@ -148,9 +148,8 @@ export default defineConfig({
       projectName: 'swagger',
     },
   ],
-  mfsu: {
-    strategy: 'normal',
-  },
+  // Avoid a second dependency compiler in the shared local Docker runtime.
+  mfsu: false,
   esbuildMinifyIIFE: true,
   requestRecord: {},
 });
