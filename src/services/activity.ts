@@ -36,6 +36,19 @@ export type ActivityPrize = {
   sort?: string | number;
 };
 
+export type ActivitySku = {
+  sku?: ActivityId;
+  activityId?: ActivityId;
+  activityCountId?: ActivityId;
+  countQuota?: string | number;
+  dayCount?: string | number;
+  monthCount?: string | number;
+  stockCount?: string | number;
+  stockCountSurplus?: string | number;
+  stockSource?: string;
+  productAmount?: string | number;
+};
+
 export type ActivityDetail = {
   activityId?: ActivityId;
   activityName?: string;
@@ -45,6 +58,7 @@ export type ActivityDetail = {
   beginDateTime?: string | number;
   endDateTime?: string | number;
   awards: ActivityPrize[];
+  skus: ActivitySku[];
 };
 
 type BackendResponse = {
@@ -198,6 +212,30 @@ const normalizePrize = (value: unknown): ActivityPrize => {
   };
 };
 
+const normalizeSku = (value: unknown): ActivitySku => {
+  const record = getRecord(value);
+  return {
+    sku: asScalar(firstValue(record, ['sku'])),
+    activityId: asScalar(firstValue(record, ['activityId', 'activity_id'])),
+    activityCountId: asScalar(firstValue(record, ['activityCountId', 'activity_count_id'])),
+    countQuota: asScalar(firstValue(record, ['countQuota', 'count_quota'])),
+    dayCount: asScalar(firstValue(record, ['dayCount', 'day_count'])),
+    monthCount: asScalar(firstValue(record, ['monthCount', 'month_count'])),
+    stockCount: asScalar(firstValue(record, ['stockCount', 'stock_count'])),
+    stockCountSurplus: asScalar(firstValue(record, ['stockCountSurplus', 'stock_count_surplus'])),
+    stockSource: asText(
+      firstValue(record, [
+        'stockSource',
+        'stocksource',
+        'stock_source',
+        'stockCountSurplusSource',
+        'stock_count_surplus_source',
+      ]),
+    ),
+    productAmount: asScalar(firstValue(record, ['productAmount', 'product_amount'])),
+  };
+};
+
 const throwBusinessError = (response: BackendResponse, fallback: string): never => {
   const info = asText(response.info);
   const error = new Error(info || fallback);
@@ -244,6 +282,7 @@ export async function query_activity_detail(activityId: ActivityId): Promise<Act
     : (['awards', 'strategyAwards', 'strategyAwardList', 'prizes', 'awardList', 'list']
         .map((key) => record[key])
         .find(Array.isArray) as unknown[] | undefined) || [];
+  const rawSkus = Array.isArray(data) ? [] : asArray(record.skus);
 
   return {
     activityId: asScalar(firstValue(record, ['activityId', 'activity_id'])),
@@ -254,5 +293,6 @@ export async function query_activity_detail(activityId: ActivityId): Promise<Act
     beginDateTime: asScalar(firstValue(record, ['beginDateTime', 'begin_date_time'])),
     endDateTime: asScalar(firstValue(record, ['endDateTime', 'end_date_time'])),
     awards: asArray(rawAwards).map(normalizePrize),
+    skus: rawSkus.map(normalizeSku),
   };
 }

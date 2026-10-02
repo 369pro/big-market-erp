@@ -4,6 +4,7 @@ import {
   type ActivityDetail,
   type ActivityId,
   type ActivityPrize,
+  type ActivitySku,
   type ActivityStage,
 } from '@/services/activity';
 import {
@@ -26,6 +27,7 @@ import {
   Row,
   Skeleton,
   Space,
+  Table,
   Tag,
   Tooltip,
   Typography,
@@ -124,10 +126,29 @@ const formatStock = (prize: ActivityPrize) => {
   return `${surplus} / ${total}`;
 };
 
+const formatStockSource = (source?: string) => {
+  if (!source) return '未提供';
+  const normalized = source.toLowerCase();
+  if (normalized === 'redis') return 'Redis 当前库存';
+  if (normalized === 'database') return '数据库快照（可能延迟）';
+  return source;
+};
+
 const formatUnlockRule = (prize: ActivityPrize) => {
   const count = valueText(prize.awardRuleLockCount, '');
   if (count) return `当天累计参与达到 ${count} 次后解锁`;
-  return prize.stockRule || prize.ruleModels || '未提供';
+  return '无次数解锁限制';
+};
+
+const formatCreditRange = (prize: ActivityPrize) => {
+  if (prize.awardKey?.toLowerCase() !== 'user_credit_random' || !prize.awardConfig) {
+    return undefined;
+  }
+  const values = prize.awardConfig.split(',').map((item) => item.trim());
+  if (values.length !== 2 || values.some((item) => item === '' || Number.isNaN(Number(item)))) {
+    return undefined;
+  }
+  return `积分范围：${values[0]}～${values[1]} 积分`;
 };
 
 const ActivityStatus: React.FC<{ value?: string }> = ({ value }) => {
@@ -145,6 +166,9 @@ const PrizeCard: React.FC<{ prize: ActivityPrize }> = ({ prize }) => (
       {prize.awardSubtitle && (
         <Typography.Text type="secondary">{prize.awardSubtitle}</Typography.Text>
       )}
+      {formatCreditRange(prize) && (
+        <Typography.Text strong> {formatCreditRange(prize)} </Typography.Text>
+      )}
       {isBalancePrize(prize) && (
         <Typography.Text strong style={{ color: '#1677ff', fontSize: 18 }}>
           余额：{formatBalance(prize)}
@@ -153,11 +177,63 @@ const PrizeCard: React.FC<{ prize: ActivityPrize }> = ({ prize }) => (
       <Descriptions size="small" column={1} colon>
         <Descriptions.Item label="基础概率">{formatProbability(prize.awardRate)}</Descriptions.Item>
         <Descriptions.Item label="库存（剩余 / 总量）">{formatStock(prize)}</Descriptions.Item>
-        <Descriptions.Item label="库存来源">{valueText(prize.stockSource)}</Descriptions.Item>
+        <Descriptions.Item label="库存来源">
+          {formatStockSource(prize.stockSource)}
+        </Descriptions.Item>
         <Descriptions.Item label="解锁规则">{formatUnlockRule(prize)}</Descriptions.Item>
       </Descriptions>
     </Space>
   </Card>
+);
+
+const SkuTable: React.FC<{ skus: ActivitySku[] }> = ({ skus }) => (
+  <Table<ActivitySku>
+    size="small"
+    rowKey={(record, index) => `${valueText(record.sku)}-${index}`}
+    pagination={false}
+    scroll={{ x: 760 }}
+    dataSource={skus}
+    columns={[
+      {
+        title: 'SKU',
+        dataIndex: 'sku',
+        render: (value: ActivityId | undefined) => valueText(value),
+      },
+      {
+        title: '兑换积分',
+        dataIndex: 'productAmount',
+        render: (value: string | number | undefined) => `${valueText(value)} 积分`,
+      },
+      {
+        title: '可兑换抽奖次数',
+        dataIndex: 'countQuota',
+        render: (value: string | number | undefined) => `${valueText(value)} 次抽奖`,
+      },
+      {
+        title: '每日次数',
+        dataIndex: 'dayCount',
+        render: (value: string | number | undefined) => `${valueText(value)} 次`,
+      },
+      {
+        title: '每月次数',
+        dataIndex: 'monthCount',
+        render: (value: string | number | undefined) => `${valueText(value)} 次`,
+      },
+      {
+        title: '库存（剩余 / 总量）',
+        render: (_: unknown, record: ActivitySku) =>
+          `${valueText(record.stockCountSurplus, '未提供')} / ${valueText(
+            record.stockCount,
+            '未提供',
+          )}`,
+      },
+      {
+        title: '库存来源',
+        dataIndex: 'stockSource',
+        render: (value: string | undefined) => formatStockSource(value),
+      },
+    ]}
+  />
 );
 
 const RaffleActivities: React.FC = () => {
@@ -500,6 +576,22 @@ const RaffleActivities: React.FC = () => {
                   </Col>
                 ))}
             </Row>
+          )}
+        </Card>
+      )}
+
+      {selectedActivity && detail && !detailError && !detailLoading && (
+        <Card
+          title="积分兑换配置"
+          style={{ marginTop: 16 }}
+          extra={
+            <Typography.Text type="secondary">兑换积分与抽奖次数，不是人民币余额</Typography.Text>
+          }
+        >
+          {detail.skus.length > 0 ? (
+            <SkuTable skus={detail.skus} />
+          ) : (
+            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无积分兑换配置" />
           )}
         </Card>
       )}
