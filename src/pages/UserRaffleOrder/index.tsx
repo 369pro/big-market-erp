@@ -1,6 +1,6 @@
 import { PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 // import { userRaffleOrder } from '@/services/ant-design-pro/api';
-import { query_user_raffle_order_page } from '@/services/api';
+import { query_user_raffle_order_page, type UserRaffleOrderQuery } from '@/services/api';
 import { Alert, Button } from 'antd';
 import React, { useState } from 'react';
 
@@ -17,11 +17,7 @@ const UserRaffleOrder: React.FC = () => {
   const request = async (params: API.PageParams) => {
     setRequestError(undefined);
     try {
-      const searchParams = params as API.PageParams & { activityId?: number | string };
-      return await query_user_raffle_order_page({
-        ...params,
-        activityId: searchParams.activityId ?? activityId,
-      });
+      return await query_user_raffle_order_page(params as UserRaffleOrderQuery);
     } catch (error) {
       const message = error instanceof Error ? error.message : '查询抽奖订单失败';
       setRequestError(message);
@@ -39,6 +35,7 @@ const UserRaffleOrder: React.FC = () => {
       title: '活动ID',
       dataIndex: 'activityId',
       valueType: 'textarea',
+      formItemProps: activityId ? { initialValue: activityId } : undefined,
     },
     {
       title: '活动名称',
