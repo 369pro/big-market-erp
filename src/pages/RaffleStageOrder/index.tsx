@@ -289,8 +289,8 @@ const RaffleStageOrder: React.FC = () => {
       title: '上架状态',
       dataIndex: 'state',
       valueEnum: stageStateEnum,
-      render: (value) => {
-        const normalized = String(value ?? '').toLowerCase();
+      render: (_, record) => {
+        const normalized = String(record.state ?? '').toLowerCase();
         if (normalized === 'active') return <Tag color="success">已上架</Tag>;
         if (normalized === 'expire') return <Tag color="error">已过期</Tag>;
         if (normalized === 'inactive') return <Tag>已下架</Tag>;
