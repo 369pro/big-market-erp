@@ -152,3 +152,33 @@ export async function update_stage_activity_2_active(id?: number): Promise<boole
 
   return true;
 }
+
+export type StageActivityState = 'active' | 'inactive';
+
+export type UpdateStageActivityStateRequest = {
+  activityId: number | string;
+  channel: string;
+  source: string;
+  state: StageActivityState;
+};
+
+export async function update_stage_activity_state(
+  data: UpdateStageActivityStateRequest,
+): Promise<boolean> {
+  const response = await request<BackendResponse<unknown>>(
+    `${apiHostUrl}/api/v1/raffle/erp/update_stage_activity_state`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      data,
+    },
+  );
+
+  if (response.code !== SUCCESS_CODE) {
+    throwBusinessError(response, data.state === 'active' ? '活动上架失败' : '活动下架失败');
+  }
+
+  return true;
+}

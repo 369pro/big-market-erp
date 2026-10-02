@@ -41,7 +41,7 @@ export default [
     component: './RaffleActivities',
   },
   {
-    name: '活动上架',
+    name: '活动上下架',
     icon: 'table',
     path: '/raffle_stage_list',
     component: './RaffleStageOrder',

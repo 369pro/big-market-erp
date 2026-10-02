@@ -42,13 +42,14 @@ const stateMeta: Record<
 > = {
   create: { label: '待上架', status: 'default' },
   active: { label: '已上架', status: 'success' },
+  inactive: { label: '已下架', status: 'default' },
   expire: { label: '已过期', status: 'error' },
   open: { label: '开启', status: 'success' },
   close: { label: '关闭', status: 'error' },
 };
 
-const stageKey = (stage: ActivityStage, index = 0) =>
-  String(stage.id ?? `${stage.activityId ?? 'unknown'}-${index}`);
+const stageKey = (stage: ActivityStage) =>
+  [stage.activityId, stage.channel, stage.source].map((value) => String(value ?? '')).join('::');
 
 const valueText = (value: unknown, fallback = '-') => {
   if (value === undefined || value === null || value === '') return fallback;
@@ -76,6 +77,11 @@ const tagForState = (value?: string) => {
       {meta?.label || valueText(value)}
     </Tag>
   );
+};
+
+const tagForStageState = (value?: string) => {
+  if (value === undefined || value === null || value === '') return <Tag>未上架</Tag>;
+  return tagForState(value);
 };
 
 const isCurrentPreviewActivity = (stage?: ActivityStage) => {
@@ -252,7 +258,7 @@ const RaffleActivities: React.FC = () => {
   }, []);
 
   const selectedActivity = useMemo(
-    () => activities.find((activity, index) => stageKey(activity, index) === selectedKey),
+    () => activities.find((activity) => stageKey(activity) === selectedKey),
     [activities, selectedKey],
   );
 
@@ -264,17 +270,15 @@ const RaffleActivities: React.FC = () => {
       setActivities(rows);
       setDetailRefreshVersion((version) => version + 1);
       setSelectedKey((currentKey) => {
-        const currentIndex = rows.findIndex(
-          (activity, index) => stageKey(activity, index) === currentKey,
-        );
+        const currentIndex = rows.findIndex((activity) => stageKey(activity) === currentKey);
         if (currentIndex >= 0) return currentKey;
         const requestedIndex = initialActivityId
           ? rows.findIndex((activity) => String(activity.activityId) === initialActivityId)
           : -1;
         return requestedIndex >= 0
-          ? stageKey(rows[requestedIndex], requestedIndex)
+          ? stageKey(rows[requestedIndex])
           : rows.length > 0
-          ? stageKey(rows[0], 0)
+          ? stageKey(rows[0])
           : undefined;
       });
     } catch (error) {
@@ -316,8 +320,8 @@ const RaffleActivities: React.FC = () => {
       });
   }, [selectedActivity?.activityId, detailRefreshVersion]);
 
-  const selectActivity = (activity: ActivityStage, index: number) => {
-    const nextKey = stageKey(activity, index);
+  const selectActivity = (activity: ActivityStage) => {
+    const nextKey = stageKey(activity);
     if (nextKey !== selectedKey) {
       detailRequestId.current += 1;
       setDetail(undefined);
@@ -406,8 +410,8 @@ const RaffleActivities: React.FC = () => {
             }
             grid={{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 4 }}
             dataSource={activities}
-            renderItem={(activity, index) => {
-              const key = stageKey(activity, index);
+            renderItem={(activity) => {
+              const key = stageKey(activity);
               const selected = key === selectedKey;
               return (
                 <List.Item>
@@ -417,10 +421,9 @@ const RaffleActivities: React.FC = () => {
                     role="button"
                     tabIndex={0}
                     aria-pressed={selected}
-                    onClick={() => selectActivity(activity, index)}
+                    onClick={() => selectActivity(activity)}
                     onKeyDown={(event) => {
-                      if (event.key === 'Enter' || event.key === ' ')
-                        selectActivity(activity, index);
+                      if (event.key === 'Enter' || event.key === ' ') selectActivity(activity);
                     }}
                     style={{
                       width: '100%',
@@ -442,7 +445,7 @@ const RaffleActivities: React.FC = () => {
                   >
                     <Space direction="vertical" size={8} style={{ width: '100%' }}>
                       <Space wrap>
-                        {tagForState(activity.state)}
+                        {tagForStageState(activity.state)}
                         {tagForState(activity.activityState)}
                       </Space>
                       <Typography.Text type="secondary">
@@ -518,7 +521,7 @@ const RaffleActivities: React.FC = () => {
               <ActivityStatus value={selectedActivity.activityState} />
             </Descriptions.Item>
             <Descriptions.Item label="上架状态">
-              {tagForState(selectedActivity.state)}
+              {tagForStageState(selectedActivity.state)}
             </Descriptions.Item>
             <Descriptions.Item label="有效期">
               {formatPeriod(selectedActivity.beginDateTime, selectedActivity.endDateTime)}
