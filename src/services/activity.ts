@@ -39,7 +39,7 @@ export type ActivityPrize = {
 export type ActivitySku = {
   sku?: ActivityId;
   activityId?: ActivityId;
-  activityCountId?: ActivityId;
+  quotaPlanId?: ActivityId;
   countQuota?: string | number;
   dayCount?: string | number;
   monthCount?: string | number;
@@ -217,7 +217,7 @@ const normalizeSku = (value: unknown): ActivitySku => {
   return {
     sku: asScalar(firstValue(record, ['sku'])),
     activityId: asScalar(firstValue(record, ['activityId', 'activity_id'])),
-    activityCountId: asScalar(firstValue(record, ['activityCountId', 'activity_count_id'])),
+    quotaPlanId: asScalar(firstValue(record, ['quotaPlanId', 'quota_plan_id', 'activityCountId', 'activity_count_id'])),
     countQuota: asScalar(firstValue(record, ['countQuota', 'count_quota'])),
     dayCount: asScalar(firstValue(record, ['dayCount', 'day_count'])),
     monthCount: asScalar(firstValue(record, ['monthCount', 'month_count'])),

@@ -29,12 +29,10 @@ import {
   Space,
   Table,
   Tag,
-  Tooltip,
   Typography,
 } from 'antd';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-
-const previewHost = 'http://localhost:3003/#/market';
+import ActivityPreview from './ActivityPreview';
 
 const stateMeta: Record<
   string,
@@ -82,17 +80,6 @@ const tagForState = (value?: string) => {
 const tagForStageState = (value?: string) => {
   if (value === undefined || value === null || value === '') return <Tag>未上架</Tag>;
   return tagForState(value);
-};
-
-const isCurrentPreviewActivity = (stage?: ActivityStage) => {
-  if (!stage || stage.state !== 'active' || stage.channel !== 'c01' || stage.source !== 's01') {
-    return false;
-  }
-  if (stage.activityState && stage.activityState !== 'open') return false;
-  const now = Date.now();
-  const begin = stage.beginDateTime ? new Date(stage.beginDateTime).getTime() : NaN;
-  const end = stage.endDateTime ? new Date(stage.endDateTime).getTime() : NaN;
-  return (!Number.isFinite(begin) || now >= begin) && (!Number.isFinite(end) || now <= end);
 };
 
 const numberValue = (value: string | number | undefined) => {
@@ -243,6 +230,7 @@ const SkuTable: React.FC<{ skus: ActivitySku[] }> = ({ skus }) => (
 );
 
 const RaffleActivities: React.FC = () => {
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [activities, setActivities] = useState<ActivityStage[]>([]);
   const [selectedKey, setSelectedKey] = useState<string>();
   const [listLoading, setListLoading] = useState(true);
@@ -360,7 +348,6 @@ const RaffleActivities: React.FC = () => {
   const stageHref = selectedActivity?.activityId
     ? `/raffle_stage_list?activityId=${encodeURIComponent(String(selectedActivity.activityId))}`
     : '/raffle_stage_list';
-  const canPreview = isCurrentPreviewActivity(selectedActivity);
 
   return (
     <PageContainer
@@ -488,22 +475,9 @@ const RaffleActivities: React.FC = () => {
               <Button type="link" icon={<ShopOutlined />} href={stageHref}>
                 前往活动上架
               </Button>
-              <Tooltip
-                title={
-                  canPreview ? '打开当前 c01 / s01 线上活动' : '仅当前 c01 / s01 线上活动可预览'
-                }
-              >
-                <Button
-                  type="link"
-                  icon={<ExportOutlined />}
-                  href={canPreview ? previewHost : undefined}
-                  target={canPreview ? '_blank' : undefined}
-                  rel={canPreview ? 'noreferrer' : undefined}
-                  disabled={!canPreview}
-                >
-                  用户端预览
-                </Button>
-              </Tooltip>
+              <Button type="link" icon={<ExportOutlined />} onClick={() => setPreviewOpen(true)}>
+                用户端预览
+              </Button>
             </Space>
           }
         >
@@ -596,6 +570,15 @@ const RaffleActivities: React.FC = () => {
           )}
         </Card>
       )}
+      <ActivityPreview
+        open={previewOpen}
+        onClose={() => setPreviewOpen(false)}
+        activity={selectedActivity}
+        detail={detail}
+        loading={detailLoading}
+        error={detailError}
+        onRetry={retryDetail}
+      />
     </PageContainer>
   );
 };
