@@ -40,3 +40,12 @@ screenshot
 
 build
 /push_all_branches.sh
+
+# local secrets and generated runtime artifacts
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+types/cache/
